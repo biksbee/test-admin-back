@@ -10,44 +10,55 @@ import * as argon2 from 'argon2';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existUser = await this.userRepository.findOne({
-      where: {
-        username: createUserDto.username,
-      },
-    });
-    if (existUser) {
-      throw new BadRequestException('This username already exist!');
-    }
-    const user = await this.userRepository.save({
-      ...createUserDto,
-      password: await argon2.hash(createUserDto.password),
-    });
-    const token = this.jwtService.sign({
-      username: createUserDto.username,
-      id: createUserDto.id,
-    });
-    return { user, token };
+    console.log(q);
+    // const existUser = await this.userRepository.findOne({
+    //   where: {
+    //     username: createUserDto.,
+    //   },
+    // });
+    // console.log('H: ' + existUser);
+    // if (existUser) {
+    //   throw new BadRequestException('This username already exist!');
+    // }
+    // const user = await this.userRepositor y.save({
+    //   ...createUserDto,
+    //   password: await argon2.hash(createUserDto.password),
+    // });
+    // const token = this.jwtService.sign({
+    //   username: createUserDto.username,
+    //   id: createUserDto.id,
+    // });
+    // return { user, token };
+    return 'This action adds a new user!';
   }
 
-  findAll() {
-    return 'HEY HI';
-  }
-
-  async findOne(username: string) {
-    return await this.userRepository.findOne({
+  async getAuthUser(username: string) {
+    return this.userRepository.findOne({
       where: {
         username,
       },
     });
   }
 
+  findAll() {
+    return 'HEY HI';
+  }
+
+  async findOne(id: number) {
+    return await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return `${updateUserDto} This action updates a #${id} user`;
   }
 
   remove(id: number) {

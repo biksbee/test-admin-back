@@ -10,7 +10,7 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string) {
-    const user = await this.usersService.findOne(username);
+    const user = await this.usersService.getAuthUser(username);
     if (user?.password !== pass) {
       throw new UnauthorizedException();
     }
@@ -25,7 +25,8 @@ export class AuthService {
     const { id, username } = user;
     const payload = { username: username, sub: id };
     return {
-      user,
+      id,
+      username,
       access_token: this.jwtService.sign(payload),
     };
   }
