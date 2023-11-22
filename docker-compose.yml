@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+#  main:
+#    container_name: main
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+#    volumes:
+#      - .env:/usr/src/app/.env
+#    ports:
+#      - '3001:3000'
+#    depends_on:
+#      - postgres
+#    restart: always
+  postgres:
+      image: postgres
+      env_file:
+        - .env
+      ports:
+        - "5433:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+
+      restart: always
+
+
+volumes:
+  pgdata:
