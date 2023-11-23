@@ -1,34 +1,34 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
+  @Column({ nullable: true })
+  name: string | null;
 
   @Column()
   username: string;
 
-  @Column()
-  email: string;
+  @Column({ nullable: true })
+  email: string | null;
 
   @Column()
   password: string;
 
-  @Column()
-  age: number;
+  @Column({ nullable: true })
+  age: number | null;
 
-  @Column()
-  sex: string;
+  @Column({ nullable: true })
+  sex: string | null;
 
-  @Column()
-  address: [number, number];
+  @Column({ type: 'jsonb', array: true, nullable: true })
+  address: [number, number] | null;
 
-  @Column()
-  employees: number[];
+  @Column({ type: 'jsonb', array: true, nullable: true })
+  employees: number[] | null;
 
-  @Column()
-  avatar: string;
+  @Column({ nullable: true })
+  avatar: string | null;
 }

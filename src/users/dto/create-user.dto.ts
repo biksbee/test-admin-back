@@ -1,25 +1,12 @@
-import { IsString, IsInt, IsEmail } from 'class-validator';
+import { IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-
-  // @IsString()
-  // name: string;
-
+  @ApiProperty()
   @IsString()
   username: string;
 
+  @ApiProperty()
   @IsString()
   password: string;
-  //
-  // @IsInt()
-  // age: number;
-  //
-  // @IsString()
-  // sex: string;
-  // address: number[];
-  // employees: number[];
-  // avatar: string;
-  //
-  // @IsEmail()
-  // email: string;
 }
