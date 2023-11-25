@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { NotFoundError } from "rxjs";
 // import * as argon2 from 'argon2';
 
 @Injectable()
@@ -53,16 +54,17 @@ export class UsersService {
     const { id } = query;
     const queryRecursive = `WITH RECURSIVE subordinates AS (
         SELECT id, name, username, email, password, age, sex, address, adminid, avatar
-      FROM "user"
+      FROM "users"
       WHERE id = ${id}
         UNION
       SELECT e.id, e.name, e.username, e.email, e.password, e.age, e.sex, e.address, e.adminid, e.avatar
-      FROM "user" e
+      FROM "users" e
       INNER JOIN subordinates s ON e.adminid = s.id
     )
       SELECT * FROM subordinates`;
     const subordinates = await this.userRepository.query(queryRecursive);
-    return subordinates;
+    const total = 4;
+    return { data: subordinates, total };
   }
 
   async findOne(id: number) {
@@ -73,8 +75,13 @@ export class UsersService {
     });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `${updateUserDto} This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const isExist = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!isExist) throw new NotFoundException('User not found');
+    await this.userRepository.update(id, updateUserDto);
+    return await this.userRepository.findOne({ where: { id } });
   }
 
   remove(id: number) {
