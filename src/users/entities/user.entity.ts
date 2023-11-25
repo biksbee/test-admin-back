@@ -23,11 +23,11 @@ export class User {
   @Column({ nullable: true })
   sex: string | null;
 
-  @Column({ type: 'jsonb', array: true, nullable: true })
-  address: [number, number] | null;
+  @Column({ type: 'float', array: true, nullable: true })
+  address: number[] | null;
 
-  @Column({ type: 'jsonb', array: true, nullable: true })
-  employees: number[] | null;
+  @Column({ nullable: true })
+  adminid: number | null;
 
   @Column({ nullable: true })
   avatar: string | null;
