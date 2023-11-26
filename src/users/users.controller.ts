@@ -16,7 +16,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { FileInterceptor, MulterModule } from "@nestjs/platform-express";
+import { diskStorage } from 'multer';
+import { FileInterceptor } from "@nestjs/platform-express";
 import { query } from "express";
 
 @Controller('users')
@@ -41,9 +42,40 @@ export class UsersController {
 
   @Patch(':id')
   // @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const avatar = `http://localhost:3000/images/${file.originalname}`;
     return this.usersService.update(+id, updateUserDto);
   }
+
+  // @Post('/upload')
+  // @UseInterceptors(
+  //   FileInterceptor('file', {
+  //     storage: diskStorage({
+  //       destination: './uploads',
+  //       filename: (req, file, cb) => {
+  //         cb(null, `${file.originalname}`);
+  //       },
+  //     }),
+  //   }),
+  // )
+  // async uploadFile(@Query() query, @UploadedFile() file: Express.Multer.File) {
+  //   const avatar = `http://localhost:3000/images/${file.originalname}`;
+  //   return this.usersService.updateAvatar(avatar, +query.id);
+  // }
 
   @Delete(':id')
   // @UseGuards(JwtAuthGuard)

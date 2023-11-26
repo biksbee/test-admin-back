@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateAvatarUserDto } from "./dto/updateAvatar-user.dto";
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { NotFoundError } from "rxjs";
 // import * as argon2 from 'argon2';
 
 @Injectable()
@@ -63,8 +67,7 @@ export class UsersService {
     )
       SELECT * FROM subordinates`;
     const subordinates = await this.userRepository.query(queryRecursive);
-    const total = 4;
-    return { data: subordinates, total };
+    return { data: subordinates };
   }
 
   async findOne(id: number) {
@@ -81,6 +84,19 @@ export class UsersService {
     });
     if (!isExist) throw new NotFoundException('User not found');
     await this.userRepository.update(id, updateUserDto);
+    return await this.userRepository.findOne({ where: { id } });
+  }
+
+  async updateAvatar(avatar: string, id: number) {
+    console.log(id);
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ avatar })
+      .where('id = :id', { id })
+      .execute();
+    const updatedUser = await this.userRepository.findOne({ where: { id } });
+    console.log(updatedUser);
     return await this.userRepository.findOne({ where: { id } });
   }
 
