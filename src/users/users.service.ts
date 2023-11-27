@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateAvatarUserDto } from "./dto/updateAvatar-user.dto";
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -40,7 +39,7 @@ export class UsersService {
       const token = this.jwtService.sign({
         username: createUserDto.username,
       });
-      return { user, token };
+      return { ...user, token };
     } catch (err) {
       console.log(err);
     }
@@ -70,6 +69,10 @@ export class UsersService {
     return { data: subordinates };
   }
 
+  async allUsers() {
+    return await this.userRepository.find();
+  }
+
   async findOne(id: number) {
     return await this.userRepository.findOne({
       where: {
@@ -78,29 +81,47 @@ export class UsersService {
     });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto, file) {
     const isExist = await this.userRepository.findOne({
       where: { id },
     });
     if (!isExist) throw new NotFoundException('User not found');
-    await this.userRepository.update(id, updateUserDto);
+    console.log(updateUserDto);
+    const avatar =
+      file !== undefined
+        ? `http://localhost:3000/images/${file.originalname}`
+        : isExist.avatar;
+    const age =
+      updateUserDto.age !== undefined
+        ? JSON.parse(updateUserDto.age)
+        : isExist.age;
+    const address =
+      updateUserDto.address !== undefined
+        ? JSON.parse(updateUserDto.address)
+        : isExist.address;
+
+    await this.userRepository.update(id, {
+      ...updateUserDto,
+      avatar,
+      age,
+      address,
+    });
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  async updateAvatar(avatar: string, id: number) {
-    console.log(id);
-    await this.userRepository
-      .createQueryBuilder()
-      .update(User)
-      .set({ avatar })
-      .where('id = :id', { id })
-      .execute();
-    const updatedUser = await this.userRepository.findOne({ where: { id } });
-    console.log(updatedUser);
-    return await this.userRepository.findOne({ where: { id } });
-  }
+  async remove(id: number) {
+    const queryRecursiveDelete = `
+      WITH RECURSIVE subordinates AS (
+      SELECT id, adminid
+    FROM "users"
+    WHERE id = $1
+    UNION
+    SELECT e.id, e.adminid
+    FROM "users" e
+    INNER JOIN subordinates s ON e.adminid = s.id
+  )
+    DELETE FROM "users" WHERE id IN (SELECT id FROM subordinates)`;
 
-  remove(id: number) {
-    return this.userRepository.delete(id);
+    return await this.userRepository.query(queryRecursiveDelete, [id]);
   }
 }

@@ -10,21 +10,20 @@ import {
   UsePipes,
   UseGuards,
   UseInterceptors,
-  UploadedFile, ParseFilePipeBuilder, Request, Query
-} from "@nestjs/common";
+  UploadedFile, Query
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { diskStorage } from 'multer';
-import { FileInterceptor } from "@nestjs/platform-express";
-import { query } from "express";
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
+  @Post('/create')
   @UsePipes(new ValidationPipe())
   create(@Body() createUserDto: CreateUserDto, @Query() query) {
     return this.usersService.create(createUserDto, query);
@@ -35,12 +34,17 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
+  @Get('allUsers')
+  findAllUsers() {
+    return this.usersService.allUsers();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Post(':id')
   // @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -57,25 +61,8 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const avatar = `http://localhost:3000/images/${file.originalname}`;
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(+id, updateUserDto, file);
   }
-
-  // @Post('/upload')
-  // @UseInterceptors(
-  //   FileInterceptor('file', {
-  //     storage: diskStorage({
-  //       destination: './uploads',
-  //       filename: (req, file, cb) => {
-  //         cb(null, `${file.originalname}`);
-  //       },
-  //     }),
-  //   }),
-  // )
-  // async uploadFile(@Query() query, @UploadedFile() file: Express.Multer.File) {
-  //   const avatar = `http://localhost:3000/images/${file.originalname}`;
-  //   return this.usersService.updateAvatar(avatar, +query.id);
-  // }
 
   @Delete(':id')
   // @UseGuards(JwtAuthGuard)
