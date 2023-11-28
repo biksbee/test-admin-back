@@ -93,11 +93,11 @@ export class UsersService {
         : isExist.avatar;
     const age =
       updateUserDto.age !== undefined
-        ? JSON.parse(updateUserDto.age)
+        ? JSON.parse(String(updateUserDto.age))
         : isExist.age;
     const address =
       updateUserDto.address !== undefined
-        ? JSON.parse(updateUserDto.address)
+        ? JSON.parse(String(updateUserDto.address))
         : isExist.address;
 
     await this.userRepository.update(id, {
